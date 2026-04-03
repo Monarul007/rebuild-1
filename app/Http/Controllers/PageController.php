@@ -70,21 +70,21 @@ class PageController extends Controller
         return redirect()->route('pages.index')->with('success', 'Page deleted successfully.');
     }
 
+    public function show(Page $page)
+    {
+        return inertia('Pages/Show', ['page' => $page]);
+    }
+
     protected function validateSchema(Request $request)
     {
         $validated = $request->validate([
             'schema'           => ['required', 'array'],
             'schema.version'   => ['required', 'integer', 'in:1'],
             'schema.sections'  => ['required', 'array'],
+            'schema.customCss' => ['nullable', 'string'],
+            'schema.customJs'  => ['nullable', 'string'],
             'title'            => ['nullable', 'string', 'max:255'],
         ]);
-
-        $encoded = json_encode($validated['schema']);
-        if ($encoded !== false && stripos($encoded, '<script') !== false) {
-            throw ValidationException::withMessages([
-                'schema' => ['The schema must not contain script-bearing content.'],
-            ]);
-        }
 
         return $validated;
     }

@@ -11,6 +11,8 @@ export interface PageState {
   sections: SectionNode[];
   selectedNodeId: NodeId | null;
   viewport: Viewport;
+  customCss: string;
+  customJs: string;
 
   addSection(node: SectionNode): void;
   removeSection(id: NodeId): void;
@@ -19,6 +21,8 @@ export interface PageState {
   selectNode(id: NodeId): void;
   deselectNode(): void;
   setViewport(v: Viewport): void;
+  setCustomCss(css: string): void;
+  setCustomJs(js: string): void;
   importHtmlSection(html: string): Promise<void>;
   duplicateSection(id: NodeId): void;
   exportSchema(): PageSchema;
@@ -66,6 +70,8 @@ export const usePageStore = create<PageState>()(
       sections: [],
       selectedNodeId: null,
       viewport: 'desktop' as Viewport,
+      customCss: '',
+      customJs: '',
 
       addSection(node: SectionNode) {
         set((s) => ({ sections: [...s.sections, node] }));
@@ -98,6 +104,14 @@ export const usePageStore = create<PageState>()(
 
       setViewport(v: Viewport) {
         set({ viewport: v });
+      },
+
+      setCustomCss(css: string) {
+        set({ customCss: css });
+      },
+
+      setCustomJs(js: string) {
+        set({ customJs: js });
       },
 
       /**
@@ -140,8 +154,8 @@ export const usePageStore = create<PageState>()(
       },
 
       exportSchema(): PageSchema {
-        const { sections } = get();
-        return { version: 1, sections };
+        const { sections, customCss, customJs } = get();
+        return { version: 1, sections, customCss, customJs };
       },
     }),
     { limit: 50 },

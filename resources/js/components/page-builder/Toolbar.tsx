@@ -140,6 +140,31 @@ export function Toolbar({ publishUrl, publishMethod = 'post', initialTitle = 'Un
           flexShrink: 0,
         }}
       >
+        {/* Back Link */}
+        <button
+          onClick={() => router.get('/pages')}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '4px',
+            fontSize: '13px',
+            color: '#6b7280',
+            background: 'none',
+            border: 'none',
+            cursor: 'pointer',
+            padding: '4px 8px',
+            marginRight: '8px',
+            borderRadius: '4px',
+            transition: 'background 0.15s',
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.background = '#f3f4f6')}
+          onMouseLeave={(e) => (e.currentTarget.style.background = 'none')}
+        >
+          ← All Pages
+        </button>
+
+        <div style={{ width: '1px', height: '24px', background: '#e5e7eb', marginRight: '8px' }} />
+
         {/* Viewport toggles */}
         <div role="group" aria-label="Viewport" style={{ display: 'flex', gap: '4px' }}>
           {VIEWPORT_BUTTONS.map(({ viewport: vp, label, Icon }) => (

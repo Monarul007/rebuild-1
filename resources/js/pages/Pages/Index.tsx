@@ -72,6 +72,25 @@ export default function Index({ pages }: IndexProps) {
                                         {new Date(page.created_at).toLocaleDateString()}
                                     </td>
                                     <td style={{ padding: '16px', textAlign: 'right' }}>
+                                        <a
+                                            href={`/pages/${page.id}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            style={{
+                                                display: 'inline-block',
+                                                textDecoration: 'none',
+                                                marginRight: '12px',
+                                                padding: '6px 12px',
+                                                background: '#f0fdf4',
+                                                color: '#15803d',
+                                                border: '1px solid #bbf7d0',
+                                                borderRadius: '4px',
+                                                fontSize: '13px',
+                                                cursor: 'pointer',
+                                            }}
+                                        >
+                                            View
+                                        </a>
                                         <button
                                             onClick={() => router.get(`/pages/${page.id}/edit`)}
                                             style={{

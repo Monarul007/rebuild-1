@@ -20,7 +20,7 @@ const BREAKPOINT_KEY: Record<Viewport, keyof SectionNode['overrides']> = {
   mobile: 'sm',
 };
 
-type Tab = 'content' | 'style' | 'layout';
+type Tab = 'content' | 'style' | 'layout' | 'page';
 
 // ---------------------------------------------------------------------------
 // Shared control components
@@ -510,6 +510,44 @@ function LayoutTab({ node, breakpointKey }: { node: SectionNode; breakpointKey: 
 }
 
 // ---------------------------------------------------------------------------
+// Tab: Page Settings
+// ---------------------------------------------------------------------------
+
+function PageSettings() {
+  const customCss = usePageStore((s) => s.customCss);
+  const setCustomCss = usePageStore((s) => s.setCustomCss);
+  const customJs = usePageStore((s) => s.customJs);
+  const setCustomJs = usePageStore((s) => s.setCustomJs);
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      <Field label="Custom CSS">
+        <textarea
+          value={customCss}
+          onChange={(e) => setCustomCss(e.target.value)}
+          placeholder="/* Add your custom CSS here */"
+          rows={10}
+          style={{ ...inputStyle, resize: 'vertical', fontFamily: 'monospace', minHeight: '150px' }}
+        />
+      </Field>
+
+      <Field label="Custom JavaScript">
+        <textarea
+          value={customJs}
+          onChange={(e) => setCustomJs(e.target.value)}
+          placeholder="// Add your custom JS here"
+          rows={10}
+          style={{ ...inputStyle, resize: 'vertical', fontFamily: 'monospace', minHeight: '150px' }}
+        />
+        <p style={{ fontSize: '10px', color: '#6b7280', marginTop: '4px' }}>
+          Note: JavaScript will run inside the preview iframe. Be careful with infinite loops.
+        </p>
+      </Field>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Main Inspector component
 // ---------------------------------------------------------------------------
 
@@ -552,10 +590,28 @@ export function Inspector({ aiSuggestUrl }: InspectorProps) {
 
   if (!selectedNode) {
     return (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', padding: '24px', textAlign: 'center' }}>
-        <div>
-          <div style={{ fontSize: '24px', marginBottom: '8px' }}>☝️</div>
-          <div style={{ fontSize: '13px', color: '#9ca3af' }}>Select an element to inspect</div>
+      <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+        <div style={{ padding: '10px 12px 0', borderBottom: '1px solid #f3f4f6' }}>
+          <div style={{ fontSize: '13px', fontWeight: 600, color: '#111827', marginBottom: '8px' }}>
+            Page Settings
+          </div>
+          <div style={{ display: 'flex' }}>
+            <button 
+              style={{
+                ...tabStyle('content'),
+                flex: 'none',
+                padding: '8px 16px',
+                borderBottom: '2px solid #3b82f6',
+                color: '#1d4ed8',
+                fontWeight: 600,
+              }}
+            >
+              Custom CSS/JS
+            </button>
+          </div>
+        </div>
+        <div style={{ flex: 1, overflowY: 'auto', padding: '12px' }}>
+          <PageSettings />
         </div>
       </div>
     );

@@ -48,13 +48,14 @@ const VIEWPORT_WIDTH: Record<Viewport, string> = {
 interface IframeCanvasProps {
   width: string;
   onBackgroundClick: () => void;
+  customCss: string;
+  customJs: string;
   children: React.ReactNode;
 }
 
-function IframeCanvas({ width, onBackgroundClick, children }: IframeCanvasProps) {
+function IframeCanvas({ width, onBackgroundClick, customCss, customJs, children }: IframeCanvasProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [mountNode, setMountNode] = useState<HTMLElement | null>(null);
-  const [iframeHeight, setIframeHeight] = useState(600);
 
   // Initialise the iframe document once it loads
   useEffect(() => {
@@ -73,11 +74,11 @@ function IframeCanvas({ width, onBackgroundClick, children }: IframeCanvasProps)
         doc.head.appendChild(script);
       }
 
-      // Reset body margin/padding
+      // Reset body margin/padding and ensure it can scroll
       if (!doc.getElementById('canvas-base')) {
         const style = doc.createElement('style');
         style.id = 'canvas-base';
-        style.textContent = 'body { margin: 0; padding: 0; background: #fff; }';
+        style.textContent = 'body { margin: 0; padding: 0; background: #fff; min-height: 100%; overflow-x: hidden; } \n html { height: 100%; }';
         doc.head.appendChild(style);
       }
 
@@ -99,16 +100,45 @@ function IframeCanvas({ width, onBackgroundClick, children }: IframeCanvasProps)
     }
   }, []);
 
-  // Auto-size the iframe to its content height
+  // Update dynamic CSS
   useEffect(() => {
-    if (!mountNode) return;
-    const ro = new ResizeObserver(() => {
-      const h = mountNode.scrollHeight;
-      if (h > 0) setIframeHeight(h);
-    });
-    ro.observe(mountNode);
-    return () => ro.disconnect();
-  }, [mountNode]);
+    const doc = iframeRef.current?.contentDocument;
+    if (!doc) return;
+
+    let style = doc.getElementById('canvas-custom-css');
+    if (!style) {
+      style = doc.createElement('style');
+      style.id = 'canvas-custom-css';
+      doc.head.appendChild(style);
+    }
+    style.textContent = customCss;
+  }, [customCss, mountNode]);
+
+  // Update dynamic JS
+  useEffect(() => {
+    const doc = iframeRef.current?.contentDocument;
+    if (!doc || !customJs) return;
+
+    // We remove old scripts and re-inject. Note: this might cause side effects
+    // but for simple visual JS it's usually what's expected in a builder.
+    const oldScript = doc.getElementById('canvas-custom-js');
+    if (oldScript) oldScript.remove();
+
+    const script = doc.createElement('script');
+    script.id = 'canvas-custom-js';
+    script.textContent = `
+      (function() {
+        try {
+          ${customJs}
+        } catch (e) {
+          console.error('Custom JS Error:', e);
+        }
+      })();
+    `;
+    doc.body.appendChild(script);
+  }, [customJs, mountNode]);
+
+  /* ResizeObserver removed to prevent infinite loop with vh units */
 
   // Deselect when clicking the iframe background (not a child element)
   useEffect(() => {
@@ -131,10 +161,10 @@ function IframeCanvas({ width, onBackgroundClick, children }: IframeCanvasProps)
       src="about:blank"
       style={{
         width,
-        height: iframeHeight,
+        height: '100%',
         border: 'none',
         background: '#ffffff',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.12)',
+        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
         transition: 'width 0.2s ease',
         display: 'block',
       }}
@@ -192,6 +222,8 @@ export function Canvas({ viewport }: CanvasProps) {
   const reorderSections = usePageStore((s) => s.reorderSections);
   const addSection = usePageStore((s) => s.addSection);
   const updateNode = usePageStore((s) => s.updateNode);
+  const customCss = usePageStore((s) => s.customCss);
+  const customJs = usePageStore((s) => s.customJs);
 
   const canvasWidth = VIEWPORT_WIDTH[viewport];
 
@@ -242,14 +274,19 @@ export function Canvas({ viewport }: CanvasProps) {
       style={{
         width: '100%',
         height: '100%',
-        overflowY: 'auto',
+        overflowY: 'hidden',
         background: '#e5e7eb',
         display: 'flex',
         justifyContent: 'center',
         padding: '24px 0',
       }}
     >
-      <IframeCanvas width={canvasWidth} onBackgroundClick={deselectNode}>
+      <IframeCanvas 
+        width={canvasWidth} 
+        onBackgroundClick={deselectNode}
+        customCss={customCss}
+        customJs={customJs}
+      >
         <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
           {sections.length === 0 ? (
             <div

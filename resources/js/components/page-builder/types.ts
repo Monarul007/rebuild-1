@@ -41,4 +41,6 @@ export interface SectionNode {
 export interface PageSchema {
   version: 1;
   sections: SectionNode[];
+  customCss?: string;
+  customJs?: string;
 }

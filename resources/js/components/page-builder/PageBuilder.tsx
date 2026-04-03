@@ -21,7 +21,15 @@ export function PageBuilder({ initialSchema, initialTitle, publishUrl, publishMe
   // Load initial schema into the store on first mount
   useEffect(() => {
     if (initialSchema) {
-      initialSchema.sections.forEach((section) => addSection(section));
+      if (initialSchema.sections) {
+        initialSchema.sections.forEach((section) => usePageStore.getState().addSection(section));
+      }
+      if (initialSchema.customCss) {
+        usePageStore.getState().setCustomCss(initialSchema.customCss);
+      }
+      if (initialSchema.customJs) {
+        usePageStore.getState().setCustomJs(initialSchema.customJs);
+      }
     }
     // Only run once on mount
     // eslint-disable-next-line react-hooks/exhaustive-deps
